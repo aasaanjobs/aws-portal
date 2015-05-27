@@ -18,13 +18,19 @@ def get_ip_address_and_login(json_data, instance_sr_no, ssh_key_path):
                 exit(0)
 
 def showing_data_to_user(json_data, ssh_key_path):
+    
+
     print("\x1b[2J\x1b[H") #Clear terminal
     template = "| {0:3} | {1:30} | {2:12} | {3:15} | {4:15} |" # column widths: 30, 12, 10, 15
     print "+" + "-"*89 + "+"
     print template.format("No.", "Instance Name", "Instance ID", "Instance IP", "Region") # Print Header
     print "+" + "="*89 + "+"
     for instance in json_data:
-        print template.format(int(json_data.index(instance))+1, instance['name'], instance['id'], instance['ip_address'], instance['region'])
+        if search:
+            if search in instance['name'].lower():
+                print template.format(int(json_data.index(instance))+1, instance['name'], instance['id'], instance['ip_address'], instance['region'])
+        else:
+            print template.format(int(json_data.index(instance))+1, instance['name'], instance['id'], instance['ip_address'], instance['region'])
     print "+" + "-"*89 + "+"
     print "Enter 0 for exit. \n"
     instance_sr_no = raw_input("Please enter Sr. No of an instance in which you want to login : ")
@@ -116,12 +122,15 @@ def main():
     parser = argparse.ArgumentParser(description='Login into instance')
     parser.add_argument('-c', '--cache', help='Pass "no" for calling fresh data.', nargs='?', default="yes" )
     parser.add_argument('-k', '--key', help='Provide the ssh-key-path.', nargs='?')
+    parser.add_argument('-s', '--search', help='Reduces the list of .', nargs='?')
     args = parser.parse_args()
     global key
     global cache
     global home
+    global search
     ssh_key_path = args.key
     cache = args.cache
+    search = args.search
 
     home = expanduser("~")
     file_exists = os.path.exists(home+"/.aws_login")
