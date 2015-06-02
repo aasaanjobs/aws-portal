@@ -9,7 +9,7 @@ def get_ip_address_and_login(json_data, instance_sr_no, ssh_key_path):
     for instance in json_data:
         if int(json_data.index(instance))==int(instance_sr_no):
             if instance['ip_address']:
-                print "Logging into the instance "+instance['name'] + " (" + instance['id'], instance['ip_address']+") using key path "+ ssh_key_path
+                print "Logging into the instance "+instance['name'] + " (" +instance['ip_address']+") using key path "+ ssh_key_path
                 cmd = "ssh -i "+ssh_key_path+" ubuntu@"+instance['ip_address']
                 os.system(cmd)
                 sys.exit(0)
@@ -18,20 +18,18 @@ def get_ip_address_and_login(json_data, instance_sr_no, ssh_key_path):
                 exit(0)
 
 def showing_data_to_user(json_data, ssh_key_path):
-    
-
     print("\x1b[2J\x1b[H") #Clear terminal
-    template = "| {0:3} | {1:30} | {2:12} | {3:15} | {4:15} |" # column widths: 30, 12, 10, 15
-    print "+" + "-"*89 + "+"
-    print template.format("No.", "Instance Name", "Instance ID", "Instance IP", "Region") # Print Header
-    print "+" + "="*89 + "+"
+    template = "| {0:3} | {1:30} | {2:15} | {3:10} | {4:15} | {5:15} |" # column widths: 30, 12, 10, 15
+    print "+" + "-"*105 + "+"
+    print template.format("No.", "Instance Name", "Instance IP", "Type", "Private IP", "Region") # Print Header
+    print "+" + "="*105 + "+"
     for instance in json_data:
         if search:
-            if search in instance['name'].lower():
-                print template.format(int(json_data.index(instance))+1, instance['name'], instance['id'], instance['ip_address'], instance['region'])
+            if search.lower() in instance['name'].lower():
+                print template.format(int(json_data.index(instance))+1, instance['name'], instance['ip_address'], instance['instance_type'], instance['private_ip_address'], instance['region'])
         else:
-            print template.format(int(json_data.index(instance))+1, instance['name'], instance['id'], instance['ip_address'], instance['region'])
-    print "+" + "-"*89 + "+"
+            print template.format(int(json_data.index(instance))+1, instance['name'], instance['ip_address'], instance['instance_type'], instance['private_ip_address'], instance['region'])
+    print "+" + "-"*105 + "+"
     print "Enter 0 for exit. \n"
     instance_sr_no = raw_input("Please enter Sr. No of an instance in which you want to login : ")
     if instance_sr_no.isdigit():
@@ -61,31 +59,57 @@ def write_instances_to_file():
     regions = data['regions']
     aws_access_key_id = data['aws_access_key_id']
     aws_secret_access_key = data['aws_secret_access_key']
-    for region in regions:
-        ec2_conn = boto.ec2.connect_to_region(region, aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+    aws_ssh_key_path = data['ssh_key_path']
+    print "Edit your configs or just press enter to keep the previous ones"
+    data['aws_access_key_id'] = raw_input("Please enter your AWS Access Key : ")
+    data['aws_secret_access_key'] = raw_input("Please enter your AWS Secret Key : ")
+    data['ssh_key_path'] = raw_input("Please enter your aws private SSH Key Path : ")
+    regions_from_boto = boto.rds.regions()
+    print "Available list of regions : "
+    print "+" + "-"*22 + "+"
+    template = "| {0:20} |"
+    print template.format("Regions") # Print Header
+    print "+" + "-"*22 + "+"
+    for region in regions_from_boto:
+        region = str(region)
+        print template.format(region[11:])
+    print "+" + "-"*22 + "+"
+    regionsinput = raw_input("Please enter aws regions (',' separated if there are multiple regions) : ")
+    if data['aws_access_key_id']=="":
+        data['aws_access_key_id']=aws_access_key_id
+    if data['aws_secret_access_key']=="":
+        data['aws_secret_access_key']=aws_secret_access_key
+    if data['ssh_key_path']=="":
+        data['ssh_key_path']=aws_ssh_key_path
+    if regionsinput=="":
+        data['regions']=regions
+    else:
+        data['regions']=regionsinput.split(",")
+    for region in data['regions']:
+        region = region.strip()
+        ec2_conn = boto.ec2.connect_to_region(region, aws_access_key_id=data['aws_access_key_id'], aws_secret_access_key=data['aws_secret_access_key'])
         reservations = ec2_conn.get_all_instances()
         for res in reservations:
             for inst in res.instances:
-                d = {}
-                d['name']=inst.tags['Name']
-                d['id']=inst.id
-                d['ip_address']=inst.ip_address
-                d['region']=region
-                Instance_lists.append(d)
+                if inst.state=="running": 
+                    d = {}
+                    d['name']=inst.tags['Name']
+                    d['ip_address']=inst.ip_address
+                    d['region']=region
+                    d['instance_type']=inst.instance_type
+                    d['private_ip_address']=inst.private_ip_address
+                    Instance_lists.append(d)
     instances_json = Instance_lists
-    print "\nWrting all the instances to aws_login file."
     data['instances'] = instances_json
     jsonFile = open(home+"/.aws_login", "w+")
     jsonFile.write(json.dumps(data))
+    os.system("chmod 600 "+home+"/.aws_login")
     jsonFile.close()
 
 def make_newconfig(home):
     Instance_lists = []
     data = {}
     print("\x1b[2J\x1b[H") #Clear terminal
-    data['aws_access_key_id'] = raw_input("Please enter your AWS Access Key : ")
-    data['aws_secret_access_key'] = raw_input("Please enter your AWS Secret Key : ")
-    data['ssh_key_path'] = raw_input("Please enter your aws private SSH Key Path : ")
     regions = boto.rds.regions()
     print "Available list of regions : "
     print "+" + "-"*22 + "+"
@@ -104,12 +128,14 @@ def make_newconfig(home):
         reservations = ec2_conn.get_all_instances()
         for res in reservations:
             for inst in res.instances:
-                d = {}
-                d['name']=inst.tags['Name']
-                d['id']=inst.id
-                d['ip_address']=inst.ip_address
-                d['region']=region
-                Instance_lists.append(d)
+                if inst.state=="running":        
+                    d = {}
+                    d['name']=inst.tags['Name']
+                    d['ip_address']=inst.ip_address
+                    d['region']=region
+                    d['instance_type']=inst.instance_type
+                    d['private_ip_address']=inst.private_ip_address
+                    Instance_lists.append(d)
     instances_json = Instance_lists
     data['instances'] = instances_json
     jsonFile = open(home+"/.aws_login", "w+")
