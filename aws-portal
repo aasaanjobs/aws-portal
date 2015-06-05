@@ -151,7 +151,7 @@ def main():
     parser = argparse.ArgumentParser(description='Login into instance')
     parser.add_argument('-c', '--cache', help='Pass "no" for calling fresh data.', nargs='?', default="yes" )
     parser.add_argument('-k', '--key', help='Provide the ssh-key-path.', nargs='?')
-    parser.add_argument('-s', '--search', help='Reduces the list of .', nargs='?')
+    parser.add_argument('-s', '--search', help='Searches for the word in the name tag of the instances.', nargs='?')
     args = parser.parse_args()
     global key
     global cache

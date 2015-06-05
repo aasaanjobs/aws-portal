@@ -9,6 +9,7 @@ Following is the process :
   - There are two flags that can be entered when calling the script.
     -  -c [CACHE], --cache [CACHE]   Pass "no" for calling new instances data. By default, it is yes.
     -  -k [KEY], --key [KEY]         Provide the ssh-key-path.
+    -  -s [SEARCH], --search [SEARCH] Searches for the word in the name tag of the instances.
   - After the list of instances is shown on the terminal, you can just enter the corresponding index of the instance to login or press 0 to exit.
 
 ## How to install :
