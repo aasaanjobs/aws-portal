@@ -110,6 +110,9 @@ def make_newconfig(home):
     Instance_lists = []
     data = {}
     print("\x1b[2J\x1b[H") #Clear terminal
+    data['aws_access_key_id'] = raw_input("Please enter your AWS Access Key : ")
+    data['aws_secret_access_key'] = raw_input("Please enter your AWS Secret Key : ")
+    data['ssh_key_path'] = raw_input("Please enter your aws private SSH Key Path : ")
     regions = boto.rds.regions()
     print "Available list of regions : "
     print "+" + "-"*22 + "+"
