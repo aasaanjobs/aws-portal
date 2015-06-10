@@ -5,25 +5,32 @@ import simplejson as json
 from os.path import expanduser
 import boto.rds
 
-def get_ip_address_and_login(json_data, instance_sr_no, ssh_key_path):
+def get_ip_address_and_login(json_data, instance_sr_no, ssh_key_path, bastion_public_ip):
+    print bastion_public_ip
     for instance in json_data:
         if int(json_data.index(instance))==int(instance_sr_no):
             if instance['ip_address']:
+
                 print "Logging into the instance "+instance['name'] + " (" +instance['ip_address']+") using key path "+ ssh_key_path
                 cmd = "ssh -i "+ssh_key_path+" ubuntu@"+instance['ip_address']
                 os.system(cmd)
                 sys.exit(0)
             else:
-                print "Intance ip address cannot be found. Exiting..."
-                exit(0)
+                print "Instance is a private instance. Usong bastion server to login."
+                cmd = "ssh -t -i "+str(ssh_key_path)+ " ubuntu@"+str(bastion_public_ip)+" ssh ubuntu@"+str(instance['private_ip_address'])
+                os.system(cmd)
+                sys.exit(0)
 
 def showing_data_to_user(json_data, ssh_key_path):
-    print("\x1b[2J\x1b[H") #Clear terminal
-    template = "| {0:3} | {1:30} | {2:15} | {3:10} | {4:15} | {5:15} |" # column widths: 30, 12, 10, 15
+    # print("\x1b[2J\x1b[H") #Clear terminal
+    bastion_public_ip = ""
+    template = "| {0:3} | {1:30} | {2:15} | {3:10} | {4:15} | {5:15} |" 
     print "+" + "-"*105 + "+"
-    print template.format("No.", "Instance Name", "Instance IP", "Type", "Private IP", "Region") # Print Header
+    print template.format("No.", "Instance Name", "Instance IP", "Type", "Private IP", "Region") 
     print "+" + "="*105 + "+"
     for instance in json_data:
+        if instance['name']=="bastion":
+            bastion_public_ip = instance['ip_address']
         if search:
             if search.lower() in instance['name'].lower():
                 print template.format(int(json_data.index(instance))+1, instance['name'], instance['ip_address'], instance['instance_type'], instance['private_ip_address'], instance['region'])
@@ -38,7 +45,7 @@ def showing_data_to_user(json_data, ssh_key_path):
             exit(0)
         else:
             instance_sr_no = int(instance_sr_no)-1
-            get_ip_address_and_login(json_data, instance_sr_no, ssh_key_path)
+            get_ip_address_and_login(json_data, instance_sr_no, ssh_key_path, bastion_public_ip)
     else:
         print "Input has to be an interger.\nExiting..."
 
@@ -101,6 +108,7 @@ def write_instances_to_file():
                     Instance_lists.append(d)
     instances_json = Instance_lists
     data['instances'] = instances_json
+    # print home+"/.aws_login"
     jsonFile = open(home+"/.aws_login", "w+")
     jsonFile.write(json.dumps(data))
     os.system("chmod 600 "+home+"/.aws_login")
@@ -109,7 +117,7 @@ def write_instances_to_file():
 def make_newconfig(home):
     Instance_lists = []
     data = {}
-    print("\x1b[2J\x1b[H") #Clear terminal
+    # print("\x1b[2J\x1b[H") #Clear terminal
     data['aws_access_key_id'] = raw_input("Please enter your AWS Access Key : ")
     data['aws_secret_access_key'] = raw_input("Please enter your AWS Secret Key : ")
     data['ssh_key_path'] = raw_input("Please enter your aws private SSH Key Path : ")
@@ -148,7 +156,7 @@ def make_newconfig(home):
     set_ssh_key_path()
 
 def main():
-    parser = argparse.ArgumentParser(description='Login into instance')
+    parser = argparse.ArgumentParser(description='Login into any aws instance. Added functionality of sshing into private instances using bastion server if the name tag of the bastion server is bastion.')
     parser.add_argument('-c', '--cache', help='Pass "no" for calling fresh data.', nargs='?', default="yes" )
     parser.add_argument('-k', '--key', help='Provide the ssh-key-path.', nargs='?')
     parser.add_argument('-s', '--search', help='Searches for the word in the name tag of the instances.', nargs='?')
