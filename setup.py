@@ -2,8 +2,8 @@
 
 from setuptools import setup
 
-setup(name='aws-portal-setup',
-  version='1.0',
+setup(name='aws-portal',
+  version='0.1',
   author='Shubham Bhartiya',
   author_email='bhartiya.shubham08@gmail.com',
   scripts=['aws-portal'],
