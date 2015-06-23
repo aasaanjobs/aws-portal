@@ -68,9 +68,10 @@ def write_instances_to_file():
     aws_secret_access_key = data['aws_secret_access_key']
     aws_ssh_key_path = data['ssh_key_path']
     print "Edit your configs or just press enter to keep the previous ones"
-    data['aws_access_key_id'] = raw_input("Please enter your AWS Access Key : ")
-    data['aws_secret_access_key'] = raw_input("Please enter your AWS Secret Key : ")
-    data['ssh_key_path'] = raw_input("Please enter your aws private SSH Key Path : ")
+
+    data['aws_access_key_id'] = raw_input("Please enter your AWS Access Key[%s] : "%("..."+aws_access_key_id[-5:]))
+    data['aws_secret_access_key'] = raw_input("Please enter your AWS Secret Key[%s] : "%("..."+aws_secret_access_key[-8:]))
+    data['ssh_key_path'] = raw_input("Please enter your aws private SSH Key Path[%s] : "%("..."+aws_ssh_key_path[-8:]))
     regions_from_boto = boto.rds.regions()
     print "Available list of regions : "
     print "+" + "-"*22 + "+"
