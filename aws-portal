@@ -61,6 +61,7 @@ def set_ssh_key_path():
 
 def write_instances_to_file():
     Instance_lists = []
+    regions_to_show = ""
     jsonFile = open(home+"/.aws_login", "r")
     data = json.load(jsonFile)
     regions = data['regions']
@@ -71,7 +72,7 @@ def write_instances_to_file():
 
     data['aws_access_key_id'] = raw_input("Please enter your AWS Access Key[%s] : "%("..."+aws_access_key_id[-5:]))
     data['aws_secret_access_key'] = raw_input("Please enter your AWS Secret Key[%s] : "%("..."+aws_secret_access_key[-8:]))
-    data['ssh_key_path'] = raw_input("Please enter your aws private SSH Key Path[%s] : "%("..."+aws_ssh_key_path[-8:]))
+    data['ssh_key_path'] = raw_input("Please enter your aws private SSH Key Path[%s] : "%aws_ssh_key_path)
     regions_from_boto = boto.rds.regions()
     print "Available list of regions : "
     print "+" + "-"*22 + "+"
@@ -82,7 +83,7 @@ def write_instances_to_file():
         region = str(region)
         print template.format(region[11:])
     print "+" + "-"*22 + "+"
-    regionsinput = raw_input("Please enter aws regions (',' separated if there are multiple regions) : ")
+    regionsinput = raw_input("Please enter aws regions (',' separated if there are multiple regions)%s : "%(regions))
     if data['aws_access_key_id']=="":
         data['aws_access_key_id']=aws_access_key_id
     if data['aws_secret_access_key']=="":
