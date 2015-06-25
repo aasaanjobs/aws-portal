@@ -14,7 +14,12 @@ Following is the process :
   - Added functionality of sshing into private instances using bastion server if the name tag of the bastion server is bastion.
 
 ## How to install :
-    -   pip install aws-portal
+    -   curl "https://raw.githubusercontent.com/aasaanjobs/aws-portal/master/aws-portal" > aws-portal  (Getting data from github and making a file out of it)
+    -   mkdir ~/bin (Create bin folder in user's home directory0
+    -   mv aws-portal ~/bin (Copy the file in the bin directory of your home folder.)
+    -   chmod +x ~/bin/aws-portal (Make it executable)
+    -   export PATH=$PATH:~/bin (To make the custom terminal command)
+    -   aws-portal (To run the file)
 
 ### Script Made by :
 * [Gaurav Verma]
