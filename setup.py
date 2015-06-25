@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='aws-portal',
-  version='1.0',
+  version='0.0',
   author='Shubham Bhartiya',
   author_email='bhartiya.shubham08@gmail.com',
   scripts=['aws-portal'],

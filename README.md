@@ -21,6 +21,10 @@ Following is the process :
     -   export PATH=$PATH:~/bin (To make the custom terminal command)
     -   aws-portal (To run the file)
 
+    OR
+
+    -   pip install aws-portal
+
 ### Script Made by :
 * [Gaurav Verma]
 * [Shubham Bhartiya]
